@@ -7,6 +7,13 @@ directory = os.environ['directory']
 arr = os.listdir(rf'{directory}')
 argTypes = ['scoring']
 
+less5 = 'менее 5 дней:'
+less29 = 'oт 5 до 29 дней:'
+less59 = 'от 30 до 59 дней:'
+less89 = 'от 60 до 89 дней:'
+plus90 = 'более 90 дней:'
+
+
 def dateParser(date: str):
     day = date[0:2]
     month = date[2:4]
@@ -68,7 +75,7 @@ def currentDelayHandler(loan):
     if currentDelay: 
         return currentDelay
     else:
-        return   None
+        return None
 
 def currentDelayBalanceHandler(loan):
     currentDelayBalance = getElementValueHandler(loan, 'DELQ_BALANCE')
@@ -93,14 +100,13 @@ def termminationReasonHandler(loan):
             print('причина закрытия: ненадлежащее исполнение обязательств')
         if result == '99':
             print('причина закрытия: иное основаение')
-
 def delayInfoHandler(loan):
     result = {
-    'менее 5 дней:': int(getElementValueHandler(loan, 'TTL_DELQ_5')),
-    'от 5 до 29 дней:': int(getElementValueHandler(loan,'TTL_DELQ_5_29')),
-    'от 30 до 59 дней:': int(getElementValueHandler(loan, 'TTL_DELQ_30_59')),
-    'от 60 до 89 дней:': int(getElementValueHandler(loan, 'TTL_DELQ_60_89')),
-    'более 90 дней:': int(getElementValueHandler(loan, 'TTL_DELQ_90_PLUS')),
+    less5: int(getElementValueHandler(loan, 'TTL_DELQ_5')),
+    less29: int(getElementValueHandler(loan,'TTL_DELQ_5_29')),
+    less59: int(getElementValueHandler(loan, 'TTL_DELQ_30_59')),
+    less89: int(getElementValueHandler(loan, 'TTL_DELQ_60_89')),
+    plus90: int(getElementValueHandler(loan, 'TTL_DELQ_90_PLUS')),
     }
     return result
 
@@ -116,8 +122,6 @@ def parser(file_name: str) -> None:
     domtree = xml.dom.minidom.parse(os.path.join(directory, file_name))
     group = domtree.documentElement
     person = group.getElementsByTagName("NAME")
-
-    print('/n')
 
     if (person.length > 0):
         print(group.getElementsByTagName('LAST_NAME')[0].childNodes[0].nodeValue)
@@ -136,8 +140,9 @@ def parser(file_name: str) -> None:
             maxDeleyBalance = maxDeleyBalanceHandler(loan)
             factCloseDate = factCloseDateHandler(loan)
             status = statusHandler(loan)     
-            print(f'====================N:{index+1}====================')
+           
             if len(sys.argv) < 2:
+                print(f'====================N:{index+1}====================')
                 uuidHandler(loan)
                 print(f"статус: {status[1]}")
                 if currentDelay:
@@ -158,32 +163,49 @@ def parser(file_name: str) -> None:
                         print('с момента закрытия счета прошло менее 3-x лет')
                     else: 
                         print('с момента закрытия счета прошло более 3-x лет')
+                print('====================####====================')
+                print('')
                         
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[0]:
-                # main data:
-                uuidHandler(loan)
+                
                 currentDelayLogical = currentDelayHandler(loan) and int(currentDelayBalanceHandler(loan)) > 10000
                 activeStatus = status[0] == '00' or status[0] == '52'
-                delay30Plus = delay['менее 5 дней:'] != 0;
+                delay30to59 = delay[less59] != 0
+                delay60to89 = delay[less89] != 0
+                delay90Pluss = delay[plus90] != 0   
+                def deltaHandler():
+                    if factCloseDate:
+                        if timeDeltaHandler(factCloseDate) < 1096:
+                            return True
+                    return False
                 
-                if (currentDelayHandler(loan)) and int(currentDelayBalanceHandler(loan)) > 10000 and (status[0] == '00' or status[0] == '52') :
-                    print('Имеется текущая просроченная задолженность длительностью «0+», более 10 000 руб.;')
-                    print(f'текущая просроченная задолженнсоть {currentDelay} дней/дня на сум {currentDelayBalance }')
-              
-                    
-            print('====================####====================')
-            print('')
+                conditionOne = currentDelayLogical and activeStatus
+                conditionTwo = activeStatus and (delay30to59 or delay60to89 or delay90Pluss) and maxDeleyBalance>10000
+                conditionThree = deltaHandler()
 
+                if conditionOne or conditionTwo or conditionThree:
+                    print(f'====================N:{index+1}====================')
+                    uuidHandler(loan)
+                    print(f"статус: {status[1]}")
+                    confirmDateHandler(loan)
+                    print(f'максимальяная сумма просроченнйо задолженности {maxDeleyBalance}') 
+                    print('Данные о просрочке:')
+                    for key, value in delay.items():
+                        if value != 0:
+                            print(key, value)
+
+                    if conditionOne:
+                        print('Имеется текущая просроченная задолженность длительностью «0+», более 10 000 руб.;')
+                        print(f'текущая просроченная задолженнсоть {currentDelay} дней/дня на сум {currentDelayBalance }')
+                        
+                    if conditionTwo:
+                        print('Обнаружен факт возникновения просроченной задолженности по активным счетам длительностью 30 (тридцать)  и более календарных дней, максимальная сумму просрочки по которым превышала 10 000 руб.')  
+                    
+                    if conditionThree:
+                        print('oбнаружен факт возникновения просроченной задолженности по ызакрытыми счетам (дата закрытия счета не превышает 36 месяцев от даты подачи заявки)  длительностью 90 (девяносто) и более календарных дней  на сумму более 10 000 руб.')       
+
+                    print('====================####====================')
+                    print('')
 for file in arr:
     parser(file)
-
-
-# Присутствуют сведения об отрицательной кредитной истории (сработал хотя бы один из критериев):
-# - Имеется текущая просроченная задолженность длительностью «0+», более 10 000 руб.;
-# - Обнаружен факт возникновения просроченной задолженности по активным счетам длительностью 30 (тридцать) 
-# и более календарных дней в кредитных и иных организациях, включая Банк, 
-# максимальная сумму просрочки по которым превышала 10 000 руб.;
-# Обнаружен факт возникновения просроченной задолженности по ызакрытыми счетам 
-# (дата закрытия счета не превышает 36 месяцев от даты подачи заявки)  длительностью 90 (девяносто) и более календарных дней 
-# на сумму более 10 000 руб. в кредитных и иных организациях включая Банк. 
 
