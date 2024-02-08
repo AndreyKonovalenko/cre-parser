@@ -172,7 +172,7 @@ def parser(file_name: str) -> None:
                 activeStatus = status[0] == '00' or status[0] == '52'
                 delay30to59 = delay[less59] != 0
                 delay60to89 = delay[less89] != 0
-                delay90Pluss = delay[plus90] != 0   
+                delay90Plus = delay[plus90] != 0   
                 def deltaHandler():
                     if factCloseDate:
                         if timeDeltaHandler(factCloseDate) < 1096:
@@ -180,7 +180,7 @@ def parser(file_name: str) -> None:
                     return False
                 
                 conditionOne = currentDelayLogical and activeStatus
-                conditionTwo = activeStatus and (delay30to59 or delay60to89 or delay90Pluss) and maxDeleyBalance>10000
+                conditionTwo = activeStatus and (delay30to59 or delay60to89 or delay90Plus) and maxDeleyBalance > 10000
                 conditionThree = deltaHandler()
 
                 if conditionOne or conditionTwo or conditionThree:
