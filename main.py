@@ -182,7 +182,7 @@ def parser(file_name: str) -> None:
                 
                 conditionOne = currentDelayLogical and activeStatus
                 conditionTwo = activeStatus and (delay30to59 or delay60to89 or delay90Plus) and maxDeleyBalance > 10000
-                conditionThree = deltaHandler() and maxDeleyBalance > 10000
+                conditionThree = deltaHandler() and maxDeleyBalance > 10000 and delay90Plus
 
                 if conditionOne or conditionTwo or conditionThree:
                     print(f'====================N:{index+1}====================')
@@ -191,7 +191,6 @@ def parser(file_name: str) -> None:
                     confirmDateHandler(loan)
                     print(f'максимальяная сумма просроченнйо задолженности {maxDeleyBalance}') 
                     print('Данные о просрочке:')
-                    print(delay)
                     for key, value in delay.items():
                         if value != 0:
                             print(key, value)
