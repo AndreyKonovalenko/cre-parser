@@ -172,7 +172,8 @@ def parser(file_name: str) -> None:
                 activeStatus = status[0] == '00' or status[0] == '52'
                 delay30to59 = delay[less59] != 0
                 delay60to89 = delay[less89] != 0
-                delay90Plus = delay[plus90] != 0   
+                delay90Plus = delay[plus90] != 0  
+
                 def deltaHandler():
                     if factCloseDate:
                         if timeDeltaHandler(factCloseDate) < 1096:
@@ -181,7 +182,7 @@ def parser(file_name: str) -> None:
                 
                 conditionOne = currentDelayLogical and activeStatus
                 conditionTwo = activeStatus and (delay30to59 or delay60to89 or delay90Plus) and maxDeleyBalance > 10000
-                conditionThree = deltaHandler()
+                conditionThree = deltaHandler() and maxDeleyBalance > 10000
 
                 if conditionOne or conditionTwo or conditionThree:
                     print(f'====================N:{index+1}====================')
@@ -190,6 +191,7 @@ def parser(file_name: str) -> None:
                     confirmDateHandler(loan)
                     print(f'максимальяная сумма просроченнйо задолженности {maxDeleyBalance}') 
                     print('Данные о просрочке:')
+                    print(delay)
                     for key, value in delay.items():
                         if value != 0:
                             print(key, value)
@@ -202,7 +204,7 @@ def parser(file_name: str) -> None:
                         print('Обнаружен факт возникновения просроченной задолженности по активным счетам длительностью 30 (тридцать)  и более календарных дней, максимальная сумму просрочки по которым превышала 10 000 руб.')  
                     
                     if conditionThree:
-                        print('oбнаружен факт возникновения просроченной задолженности по ызакрытыми счетам (дата закрытия счета не превышает 36 месяцев от даты подачи заявки)  длительностью 90 (девяносто) и более календарных дней  на сумму более 10 000 руб.')       
+                        print('oбнаружен факт возникновения просроченной задолженности по закрытыми счетам (дата закрытия счета не превышает 36 месяцев от даты подачи заявки)  длительностью 90 (девяносто) и более календарных дней  на сумму более 10 000 руб.')       
 
                     print('====================####====================')
                     print('')
