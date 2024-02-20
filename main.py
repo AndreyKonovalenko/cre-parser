@@ -3,6 +3,8 @@ import os
 import datetime
 import sys
 
+from constants import *
+
 directory = os.environ['directory']
 arr = os.listdir(rf'{directory}')
 argTypes = ['scoring']
@@ -37,9 +39,9 @@ def getElementValueHandler(loan, type):
 def confirmDateHandler(loan):
     result = getElementValueHandler(loan, 'INF_CONFIRM_DATE')
     if result:
-        print(f'дата подтверждения: {dateParser(result)}')
+        print(f'{CONFIRM_DATE}: {dateParser(result)}')
     else:
-        print("дата подтверждения: не задана")
+        print(f'{CONFIRM_DATE}: не задана')
 
 def factCloseDateHandler(loan):
     result = getElementValueHandler(loan, 'FACT_CLOSE_DATE')
@@ -84,7 +86,7 @@ def currentDelayBalanceHandler(loan):
     else: 
         return 0
 
-def maxDeleyBalanceHandler(loan):
+def maxDelayBalanceHandler(loan):
     result = getElementValueHandler(loan, 'MAX_DELQ_BALANCE')
     if result: 
         return float(result)
@@ -95,7 +97,7 @@ def maxDeleyBalanceHandler(loan):
 def termminationReasonHandler(loan):
     result = getElementValueHandler(loan, 'TERMINATION_REASON')
     if result:
-        print(f'причена закрытия код: {result}')
+        print(f'причина закрытия код: {result}')
         if result == '1':
             print('причина закрытия: ненадлежащее исполнение обязательств')
         if result == '99':
@@ -137,7 +139,7 @@ def parser(file_name: str) -> None:
         if hasDelay(delay):
             currentDelay = currentDelayHandler(loan)
             currentDelayBalance = currentDelayBalanceHandler(loan)
-            maxDeleyBalance = maxDeleyBalanceHandler(loan)
+            maxDelayBalance = maxDelayBalanceHandler(loan)
             factCloseDate = factCloseDateHandler(loan)
             status = statusHandler(loan)     
            
@@ -146,10 +148,10 @@ def parser(file_name: str) -> None:
                 uuidHandler(loan)
                 print(f"статус: {status[1]}")
                 if currentDelay:
-                    print(f'текущая просроченная задолженнсоть {currentDelay} дней/дня на сумму {currentDelayBalance}')
+                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
                 else:
-                    print(f'просроченная задолженность отсутвует')
-                print(f'максимальяная сумма просроченнйо задолженности {maxDeleyBalance}')
+                    print(f'просроченная задолженность отсутствует')
+                print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}')
                 termminationReasonHandler(loan)
                 confirmDateHandler(loan)
                 print('Данные о просрочке:')
@@ -157,7 +159,7 @@ def parser(file_name: str) -> None:
                     if value != 0:
                         print(key, value)                    
                 if factCloseDate:
-                    print(f'дата закртыия счета {dateParser(factCloseDate)}')
+                    print(f'{FACT_CLOSE_DATA} {dateParser(factCloseDate)}')
                     delta = timeDeltaHandler(factCloseDate)
                     if delta < 1096:
                         print('с момента закрытия счета прошло менее 3-x лет')
@@ -181,23 +183,23 @@ def parser(file_name: str) -> None:
                     return False
                 
                 conditionOne = currentDelayLogical and activeStatus
-                conditionTwo = activeStatus and (delay30to59 or delay60to89 or delay90Plus) and maxDeleyBalance > 10000
-                conditionThree = deltaHandler() and maxDeleyBalance > 10000 and delay90Plus
+                conditionTwo = activeStatus and (delay30to59 or delay60to89 or delay90Plus) and maxDelayBalance > 10000
+                conditionThree = deltaHandler() and maxDelayBalance > 10000 and delay90Plus
 
                 if conditionOne or conditionTwo or conditionThree:
                     print(f'====================N:{index+1}====================')
                     uuidHandler(loan)
                     print(f"статус: {status[1]}")
                     confirmDateHandler(loan)
-                    print(f'максимальяная сумма просроченнйо задолженности {maxDeleyBalance}') 
+                    print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}') 
                     print('Данные о просрочке:')
                     for key, value in delay.items():
                         if value != 0:
                             print(key, value)
 
                     if conditionOne:
-                        print('Имеется текущая просроченная задолженность длительностью «0+», более 10 000 руб.;')
-                        print(f'текущая просроченная задолженнсоть {currentDelay} дней/дня на сум {currentDelayBalance }')
+                        print(f'Имеется {CURRENT_DELAY} длительностью «0+», более 10 000 руб.;')
+                        print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сум {currentDelayBalance }')
                         
                     if conditionTwo:
                         print('Обнаружен факт возникновения просроченной задолженности по активным счетам длительностью 30 (тридцать)  и более календарных дней, максимальная сумму просрочки по которым превышала 10 000 руб.')  
