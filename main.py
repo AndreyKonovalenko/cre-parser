@@ -7,7 +7,7 @@ from constants import *
 
 directory = os.environ['directory']
 arr = os.listdir(rf'{directory}')
-argTypes = ['scoring']
+argTypes = ['scoring', 'short']
 
 less5 = 'менее 5 дней:'
 less29 = 'oт 5 до 29 дней:'
@@ -54,9 +54,9 @@ def uuidHandler(loan):
     uuidTag = loan.getElementsByTagName('UUID')
     if uuidTag.length > 0:
         uuid = uuidTag[0].childNodes[0].nodeValue
-        print(f'uuid: {uuid}')
+        return (f'uuid: {uuid}')
     else:
-        print('uuid: не задан')
+        return ('uuid: не задан')
             
 def statusHandler(loan):
     result = getElementValueHandler(loan, 'STATUS')
@@ -145,7 +145,7 @@ def parser(file_name: str) -> None:
            
             if len(sys.argv) < 2:
                 print(f'====================N:{index+1}====================')
-                uuidHandler(loan)
+                print(uuidHandler(loan))
                 print(f"статус: {status[1]}")
                 if currentDelay:
                     print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
@@ -167,6 +167,27 @@ def parser(file_name: str) -> None:
                         print('с момента закрытия счета прошло более 3-x лет')
                 print('====================####====================')
                 print('')
+
+            if len(sys.argv) > 1 and sys.argv[1] == argTypes[1]:
+                print(uuidHandler(loan) + " " + f"{status[1]}")
+                if currentDelay:
+                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
+                else:
+                    print(f'просроченная задолженность отсутствует')
+                print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}')
+                result = ""
+                for key, value in delay.items():   
+                    if value != 0:
+                        result = f"{result} {key} {value};"   
+                print(f'Данные о просрочке:{result}')
+
+                if factCloseDate:
+                    print(f'{FACT_CLOSE_DATA} {dateParser(factCloseDate)}')
+                    delta = timeDeltaHandler(factCloseDate)
+                    if delta < 1096:
+                        print('с момента закрытия счета прошло менее 3-x лет')
+                    else: 
+                        print('с момента закрытия счета прошло более 3-x лет')
                         
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[0]:
                 
@@ -188,7 +209,7 @@ def parser(file_name: str) -> None:
 
                 if conditionOne or conditionTwo or conditionThree:
                     print(f'====================N:{index+1}====================')
-                    uuidHandler(loan)
+                    print(uuidHandler(loan))
                     print(f"статус: {status[1]}")
                     confirmDateHandler(loan)
                     print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}') 
