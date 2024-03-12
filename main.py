@@ -112,9 +112,9 @@ def delayInfoHandler(loan):
     }
     return result
 
-def hasDelay(dalay):
+def hasDelay(delay):
     result = False
-    for key, value in dalay.items():
+    for key, value in delay.items():
         if value != 0:
             result = True
             break
@@ -133,6 +133,7 @@ def parser(file_name: str) -> None:
         print(group.getElementsByTagName('FULL_NAME')[0].childNodes[0].nodeValue)
 
     loans = group.getElementsByTagName('LOAN')
+    print( f"всего {group.getElementsByTagName('LOANS_MAIN_BORROWER')[0].childNodes[0].nodeValue} счетов; активных {group.getElementsByTagName('LOANS_ACTIVE')[0].childNodes[0].nodeValue} счетов")
 
     for index, loan in enumerate(loans):
         delay = delayInfoHandler(loan)
