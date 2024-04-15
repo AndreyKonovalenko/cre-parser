@@ -121,6 +121,8 @@ def hasDelay(delay):
     return result
 
 def parser(file_name: str) -> None:
+    
+
     domtree = xml.dom.minidom.parse(os.path.join(directory, file_name))
     group = domtree.documentElement
     person = group.getElementsByTagName("NAME")
@@ -133,12 +135,12 @@ def parser(file_name: str) -> None:
         print(group.getElementsByTagName('FULL_NAME')[0].childNodes[0].nodeValue)
 
     loans = group.getElementsByTagName('LOAN')
-    print( f"всего {group.getElementsByTagName('LOANS_MAIN_BORROWER')[0].childNodes[0].nodeValue} счетов; активных {group.getElementsByTagName('LOANS_ACTIVE')[0].childNodes[0].nodeValue} счетов")
-
-    # pirnt help args
-    if len(sys.argv) > 1 and sys.argv[1] == argTypes[2]:
-      for element in argTypes:
-        print(element)
+    loans_main_borrower = group.getElementsByTagName('LOANS_MAIN_BORROWER')
+    loans_active = group.getElementsByTagName('LOANS_ACTIVE')
+    loans_main_borrower_result = loans_main_borrower[0].childNodes[0].nodeValue if loans_main_borrower else "undefined"
+    loans_actiev_result = loans_active[0].childNodes[0].nodeValue if loans_active else 'undefined'
+  
+    print( f"всего {loans_main_borrower_result} счетов; активных {loans_actiev_result} счетов")
 
     for index, loan in enumerate(loans):
         delay = delayInfoHandler(loan)
@@ -150,7 +152,6 @@ def parser(file_name: str) -> None:
             status = statusHandler(loan)     
            
             if len(sys.argv) < 2:
-                print((sys.argv))
                 print(f'====================N:{index+1}====================')
                 print(uuidHandler(loan))
                 print(f"статус: {status[1]}")
@@ -237,6 +238,18 @@ def parser(file_name: str) -> None:
 
                     print('====================####====================')
                     print('')
-for file in arr:
-    parser(file)
+
+if len(sys.argv) == 1: 
+  for file in arr:
+   parser(file)
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == argTypes[2]:
+      for element in argTypes:
+        print(element)
+    if sys.argv[1] != argTypes[2]: 
+        for file in arr:
+          parser(file)
+
+
 
