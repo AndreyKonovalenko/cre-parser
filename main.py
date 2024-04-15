@@ -7,7 +7,7 @@ from constants import *
 
 directory = os.environ['directory']
 arr = os.listdir(rf'{directory}')
-argTypes = ['scoring', 'short']
+argTypes = ['scoring', 'short', 'help']
 
 less5 = 'менее 5 дней:'
 less29 = 'oт 5 до 29 дней:'
@@ -135,6 +135,11 @@ def parser(file_name: str) -> None:
     loans = group.getElementsByTagName('LOAN')
     print( f"всего {group.getElementsByTagName('LOANS_MAIN_BORROWER')[0].childNodes[0].nodeValue} счетов; активных {group.getElementsByTagName('LOANS_ACTIVE')[0].childNodes[0].nodeValue} счетов")
 
+    # pirnt help args
+    if len(sys.argv) > 1 and sys.argv[1] == argTypes[2]:
+      for element in argTypes:
+        print(element)
+
     for index, loan in enumerate(loans):
         delay = delayInfoHandler(loan)
         if hasDelay(delay):
@@ -145,6 +150,7 @@ def parser(file_name: str) -> None:
             status = statusHandler(loan)     
            
             if len(sys.argv) < 2:
+                print((sys.argv))
                 print(f'====================N:{index+1}====================')
                 print(uuidHandler(loan))
                 print(f"статус: {status[1]}")
@@ -168,7 +174,7 @@ def parser(file_name: str) -> None:
                         print('с момента закрытия счета прошло более 3-x лет')
                 print('====================####====================')
                 print('')
-
+            # short
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[1]:
                 print(uuidHandler(loan) + " " + f"{status[1]}")
                 if currentDelay:
@@ -189,7 +195,7 @@ def parser(file_name: str) -> None:
                         print('с момента закрытия счета прошло менее 3-x лет')
                     else: 
                         print('с момента закрытия счета прошло более 3-x лет')
-                        
+            # scoring          
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[0]:
                 
                 currentDelayLogical = currentDelayHandler(loan) and int(currentDelayBalanceHandler(loan)) > 10000
