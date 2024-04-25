@@ -79,6 +79,13 @@ def currentDelayHandler(loan):
     else:
         return None
 
+def creditLimitHandeler(loan):
+    creditLimit = getElementValueHandler(loan, 'CREDIT_LIMIT')
+    if creditLimit:
+        return creditLimit
+    else: 
+        return None
+
 def currentDelayBalanceHandler(loan):
     currentDelayBalance = getElementValueHandler(loan, 'DELQ_BALANCE')
     if currentDelayBalance:
@@ -102,6 +109,7 @@ def termminationReasonHandler(loan):
             print('причина закрытия: ненадлежащее исполнение обязательств')
         if result == '99':
             print('причина закрытия: иное основаение')
+
 def delayInfoHandler(loan):
     result = {
     less5: int(getElementValueHandler(loan, 'TTL_DELQ_5')),
@@ -139,7 +147,7 @@ def parser(file_name: str) -> None:
     loans_active = group.getElementsByTagName('LOANS_ACTIVE')
     loans_main_borrower_result = loans_main_borrower[0].childNodes[0].nodeValue if loans_main_borrower else "undefined"
     loans_actiev_result = loans_active[0].childNodes[0].nodeValue if loans_active else 'undefined'
-  
+
     print( f"всего {loans_main_borrower_result} счетов; активных {loans_actiev_result} счетов")
 
     for index, loan in enumerate(loans):
@@ -149,12 +157,14 @@ def parser(file_name: str) -> None:
             currentDelayBalance = currentDelayBalanceHandler(loan)
             maxDelayBalance = maxDelayBalanceHandler(loan)
             factCloseDate = factCloseDateHandler(loan)
-            status = statusHandler(loan)     
+            status = statusHandler(loan)
+            creditLimit = creditLimitHandeler(loan)     
            
             if len(sys.argv) < 2:
                 print(f'====================N:{index+1}====================')
                 print(uuidHandler(loan))
                 print(f"статус: {status[1]}")
+                print(f'{CREDIT_LIMIT} {creditLimit}')
                 if currentDelay:
                     print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
                 else:
@@ -178,6 +188,7 @@ def parser(file_name: str) -> None:
             # short
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[1]:
                 print(uuidHandler(loan) + " " + f"{status[1]}")
+                print(f'{CREDIT_LIMIT} {creditLimit}')
                 if currentDelay:
                     print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
                 else:
@@ -219,6 +230,7 @@ def parser(file_name: str) -> None:
                     print(f'====================N:{index+1}====================')
                     print(uuidHandler(loan))
                     print(f"статус: {status[1]}")
+                    print(f'{CREDIT_LIMIT} {creditLimit}')
                     confirmDateHandler(loan)
                     print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}') 
                     print('Данные о просрочке:')
