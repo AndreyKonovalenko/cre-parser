@@ -15,7 +15,6 @@ less59 = 'от 30 до 59 дней:'
 less89 = 'от 60 до 89 дней:'
 plus90 = 'более 90 дней:'
 
-
 def dateParser(date: str):
     day = date[0:2]
     month = date[2:4]
@@ -67,7 +66,7 @@ def statusHandler(loan):
             return ['13', 'закрыт']
         if result == "14":
             return ['14', 'передан на обслуживание в другую организацию']
-        if result == "52":
+        if result == '52':
             return ['52', 'просрочен']
     else:
         return ['','не задан']
@@ -86,6 +85,14 @@ def creditLimitHandeler(loan):
     else: 
         return None
 
+def productTypeHandler(loan):
+    type = getElementValueHandler(loan, 'TYPE')
+    typeText = TYPES.get(type)
+    if typeText == None: 
+      return "тип " + type + " не описан в объекте TYPES"
+    else: 
+        return typeText
+    
 def currentDelayBalanceHandler(loan):
     currentDelayBalance = getElementValueHandler(loan, 'DELQ_BALANCE')
     if currentDelayBalance:
@@ -158,13 +165,15 @@ def parser(file_name: str) -> None:
             maxDelayBalance = maxDelayBalanceHandler(loan)
             factCloseDate = factCloseDateHandler(loan)
             status = statusHandler(loan)
-            creditLimit = creditLimitHandeler(loan)     
+            creditLimit = creditLimitHandeler(loan)   
+            type = productTypeHandler(loan)  
            
             if len(sys.argv) < 2:
                 print(f'====================N:{index+1}====================')
                 print(uuidHandler(loan))
                 print(f"статус: {status[1]}")
                 print(f'{CREDIT_LIMIT} {creditLimit}')
+                print(type)
                 if currentDelay:
                     print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
                 else:
@@ -187,7 +196,7 @@ def parser(file_name: str) -> None:
                 print('')
             # short
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[1]:
-                print(uuidHandler(loan) + " " + f"{status[1]}")
+                print(uuidHandler(loan) + " " + f"{status[1]}" + " " + type)
                 print(f'{CREDIT_LIMIT} {creditLimit}')
                 if currentDelay:
                     print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
@@ -230,6 +239,7 @@ def parser(file_name: str) -> None:
                     print(f'====================N:{index+1}====================')
                     print(uuidHandler(loan))
                     print(f"статус: {status[1]}")
+                    print(type)
                     print(f'{CREDIT_LIMIT} {creditLimit}')
                     confirmDateHandler(loan)
                     print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}') 
