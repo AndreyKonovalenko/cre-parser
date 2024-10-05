@@ -87,11 +87,14 @@ def creditLimitHandeler(loan):
 
 def productTypeHandler(loan):
     type = getElementValueHandler(loan, 'TYPE')
-    typeText = TYPES.get(type)
-    if typeText == None: 
-      return "тип " + type + " не описан в объекте TYPES"
+    if type != None:
+      typeText = TYPES.get(type)
+      if typeText == None: 
+        return "тип " + type + " не описан в объекте TYPES"
+      else: 
+          return typeText
     else: 
-        return typeText
+        return "отсутвует tag TYPE"
     
 def currentDelayBalanceHandler(loan):
     currentDelayBalance = getElementValueHandler(loan, 'DELQ_BALANCE')
@@ -159,7 +162,7 @@ def parser(file_name: str) -> None:
 
     for index, loan in enumerate(loans):
         delay = delayInfoHandler(loan)
-        if hasDelay(delay):
+        if hasDelay(delay) or getElementValueHandler(loan, 'STATUS') == "52":
             currentDelay = currentDelayHandler(loan)
             currentDelayBalance = currentDelayBalanceHandler(loan)
             maxDelayBalance = maxDelayBalanceHandler(loan)
