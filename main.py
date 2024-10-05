@@ -285,6 +285,3 @@ if len(sys.argv) > 1:
     if sys.argv[1] != argTypes[2]: 
         for file in arr:
           parser(file)
-
-
-
