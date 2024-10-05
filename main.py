@@ -96,6 +96,17 @@ def productTypeHandler(loan):
     else: 
         return "отсутвует tag TYPE"
     
+def relationshipTypeHandler(loan):
+    relationship = getElementValueHandler(loan, 'RELATIONSHIP')
+    if relationship != None:
+      typeText = RELATIONSHIPS.get(relationship)
+      if typeText == None: 
+        return "тип " + relationship + " не описан в объекте RELATIONSHIP"
+      else: 
+          return typeText
+    else: 
+        return "отсутвует tag RELATIONSHIP"
+    
 def currentDelayBalanceHandler(loan):
     currentDelayBalance = getElementValueHandler(loan, 'DELQ_BALANCE')
     if currentDelayBalance:
@@ -139,8 +150,6 @@ def hasDelay(delay):
     return result
 
 def parser(file_name: str) -> None:
-    
-
     domtree = xml.dom.minidom.parse(os.path.join(directory, file_name))
     group = domtree.documentElement
     person = group.getElementsByTagName("NAME")
@@ -169,14 +178,15 @@ def parser(file_name: str) -> None:
             factCloseDate = factCloseDateHandler(loan)
             status = statusHandler(loan)
             creditLimit = creditLimitHandeler(loan)   
-            type = productTypeHandler(loan)  
+            type = productTypeHandler(loan)
+            relationship = relationshipTypeHandler(loan)  
            
             if len(sys.argv) < 2:
                 print(f'====================N:{index+1}====================')
                 print(uuidHandler(loan))
                 print(f"статус: {status[1]}")
                 print(f'{CREDIT_LIMIT} {creditLimit}')
-                print(type)
+                print(type + " " + relationship)
                 if currentDelay:
                     print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
                 else:
@@ -199,7 +209,7 @@ def parser(file_name: str) -> None:
                 print('')
             # short
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[1]:
-                print(uuidHandler(loan) + " " + f"{status[1]}" + " " + type)
+                print(uuidHandler(loan) + " " + f"{status[1]}" + " " + type + " " + relationship)
                 print(f'{CREDIT_LIMIT} {creditLimit}')
                 if currentDelay:
                     print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
@@ -242,7 +252,7 @@ def parser(file_name: str) -> None:
                     print(f'====================N:{index+1}====================')
                     print(uuidHandler(loan))
                     print(f"статус: {status[1]}")
-                    print(type)
+                    print(type + " " + relationship)
                     print(f'{CREDIT_LIMIT} {creditLimit}')
                     confirmDateHandler(loan)
                     print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}') 
