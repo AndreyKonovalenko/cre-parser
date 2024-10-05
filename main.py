@@ -209,7 +209,7 @@ def parser(file_name: str) -> None:
                 print('')
             # short
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[1]:
-                print(uuidHandler(loan) + " " + f"{status[1]}" + " " + type + " " + relationship)
+                print(uuidHandler(loan) + "; " + f"{status[1]}" + "; " + type + "; " + relationship)
                 print(f'{CREDIT_LIMIT} {creditLimit}')
                 if currentDelay:
                     print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
