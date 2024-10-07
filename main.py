@@ -94,7 +94,7 @@ def productTypeHandler(loan):
       else: 
           return typeText
     else: 
-        return "отсутвует tag TYPE"
+        return "отсутствует tag TYPE"
     
 def relationshipTypeHandler(loan):
     relationship = getElementValueHandler(loan, 'RELATIONSHIP')
