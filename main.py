@@ -121,7 +121,7 @@ def currentDelayBalanceHandler(loan):
     if currentDelayBalance:
         return float(currentDelayBalance)
     else: 
-        return None
+        return 0
 
 def maxDelayBalanceHandler(loan):
     result = getElementValueHandler(loan, 'MAX_DELQ_BALANCE')
@@ -241,7 +241,6 @@ def parser(file_name: str) -> None:
                         print('с момента закрытия счета прошло более 3-x лет')
             # scoring          
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[0]:
-                
                 currentDelayLogical = currentDelayHandler(loan) and int(currentDelayBalanceHandler(loan)) > 10000
                 activeStatus = status[0] == '00' or status[0] == '52'
                 delay30to59 = delay[less59] != 0
