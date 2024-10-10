@@ -78,6 +78,15 @@ def currentDelayHandler(loan):
     else:
         return None
 
+def pastDueDateHandler(loan):
+    pastDueDate= getElementValueHandler(loan, 'PAST_DUE_DATE')
+    calculationDate = getElementValueHandler(loan, 'CALCULATION_DATE')
+    if pastDueDate and calculationDate: 
+        return { "pastDueDate": pastDueDate, "calculationDate": calculationDate}
+    else: 
+        return None
+
+
 def creditLimitHandeler(loan):
     creditLimit = getElementValueHandler(loan, 'CREDIT_LIMIT')
     if creditLimit:
@@ -112,7 +121,7 @@ def currentDelayBalanceHandler(loan):
     if currentDelayBalance:
         return float(currentDelayBalance)
     else: 
-        return 0
+        return None
 
 def maxDelayBalanceHandler(loan):
     result = getElementValueHandler(loan, 'MAX_DELQ_BALANCE')
@@ -173,6 +182,7 @@ def parser(file_name: str) -> None:
         delay = delayInfoHandler(loan)
         if hasDelay(delay) or getElementValueHandler(loan, 'STATUS') == "52":
             currentDelay = currentDelayHandler(loan)
+            pastDueDates=pastDueDateHandler(loan)
             currentDelayBalance = currentDelayBalanceHandler(loan)
             maxDelayBalance = maxDelayBalanceHandler(loan)
             factCloseDate = factCloseDateHandler(loan)
@@ -211,8 +221,8 @@ def parser(file_name: str) -> None:
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[1]:
                 print(uuidHandler(loan) + "; " + f"{status[1]}" + "; " + type + "; " + relationship)
                 print(f'{CREDIT_LIMIT} {creditLimit}')
-                if currentDelay:
-                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance}')
+                if currentDelay != None and  currentDelay != '0':
+                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance} дата возникновения { dateParser(pastDueDates['pastDueDate'])} дата расчета {dateParser(pastDueDates['calculationDate'])}')
                 else:
                     print(f'просроченная задолженность отсутствует')
                 print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}')
