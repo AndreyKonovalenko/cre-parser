@@ -221,7 +221,7 @@ def parser(file_name: str) -> None:
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[1]:
                 print(uuidHandler(loan) + "; " + f"{status[1]}" + "; " + type + "; " + relationship)
                 print(f'{CREDIT_LIMIT} {creditLimit}')
-                if currentDelay != None and  currentDelay != '0':
+                if currentDelay != None and  currentDelay != '0' or status[0] == '52' :
                     print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance} дата возникновения { dateParser(pastDueDates['pastDueDate'])} дата расчета {dateParser(pastDueDates['calculationDate'])}')
                 else:
                     print(f'просроченная задолженность отсутствует')
