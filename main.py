@@ -2,12 +2,12 @@ import xml.dom.minidom
 import os 
 import datetime
 import sys
-
+from prettytable import PrettyTable
 from constants import *
 
 directory = os.environ['directory']
 arr = os.listdir(rf'{directory}')
-argTypes = ['scoring', 'short', 'help']
+argTypes = ['scoring', 'short', 'help', 'delay']
 
 less5 = 'менее 5 дней:'
 less29 = 'oт 5 до 29 дней:'
@@ -56,6 +56,14 @@ def uuidHandler(loan):
         return (f'uuid: {uuid}')
     else:
         return ('uuid: не задан')
+def uuidHandlerClean(loan):
+    uuidTag = loan.getElementsByTagName('UUID')
+    if uuidTag.length > 0:
+        uuid = uuidTag[0].childNodes[0].nodeValue
+        return (uuid)
+    else:
+        return ('uuid: не задан')
+  
             
 def statusHandler(loan):
     result = getElementValueHandler(loan, 'STATUS')
@@ -178,6 +186,11 @@ def parser(file_name: str) -> None:
 
     print( f"всего {loans_main_borrower_result} счетов; активных {loans_actiev_result} счетов")
 
+    # delay case only 
+  
+    tabale = PrettyTable()
+    tabale.field_names = ["uuid", "лимит", "статус", "сумма просрочки", "дата воз.", "тип", "oтношение", "дней"]  
+  
     for index, loan in enumerate(loans):
         delay = delayInfoHandler(loan)
         if hasDelay(delay) or getElementValueHandler(loan, 'STATUS') == "52":
@@ -239,6 +252,12 @@ def parser(file_name: str) -> None:
                         print('с момента закрытия счета прошло менее 3-x лет')
                     else: 
                         print('с момента закрытия счета прошло более 3-x лет')
+            # delay 
+            if len(sys.argv) > 1 and sys.argv[1] == argTypes[3]:
+              if currentDelay != None and  currentDelay != '0' or status[0] == '52' :
+                # tabale.field_names  = ["uuid", "лимит", "статус", "сумма просрочки", "дата воз.", "тип", "oтношение"  "дней"]  
+                tabale.add_row([uuidHandlerClean(loan), creditLimit, status[1], currentDelayBalance, dateParser(pastDueDates['pastDueDate']), type, relationship, currentDelay])
+            
             # scoring          
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[0]:
                 currentDelayLogical = currentDelayHandler(loan) and int(currentDelayBalanceHandler(loan)) > 10000
@@ -282,6 +301,8 @@ def parser(file_name: str) -> None:
 
                     print('====================####====================')
                     print('')
+    if len(sys.argv) > 1 and sys.argv[1] == argTypes[3]:
+      print(tabale)
 
 if len(sys.argv) == 1: 
   for file in arr:
