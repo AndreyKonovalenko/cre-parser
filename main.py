@@ -7,7 +7,7 @@ from constants import *
 
 directory = os.environ['directory']
 arr = os.listdir(rf'{directory}')
-argTypes = ['scoring', 'short', 'help', 'delay']
+argTypes = ['scoring', 'short', 'help', 'delay', 'shortTable']
 
 less5 = 'менее 5 дней:'
 less29 = 'oт 5 до 29 дней:'
@@ -188,8 +188,7 @@ def parser(file_name: str) -> None:
 
     # delay case only 
   
-    tabale = PrettyTable()
-    tabale.field_names = ["uuid", "лимит", "статус", "сумма просрочки", "дата воз.", "тип", "oтношение", "дней"]  
+    table = PrettyTable()
   
     for index, loan in enumerate(loans):
         delay = delayInfoHandler(loan)
@@ -252,11 +251,21 @@ def parser(file_name: str) -> None:
                         print('с момента закрытия счета прошло менее 3-x лет')
                     else: 
                         print('с момента закрытия счета прошло более 3-x лет')
+            # shortTable           
+            if len(sys.argv) > 1 and sys.argv[1] == argTypes[4]:
+                result = ""
+                for key, value in delay.items():   
+                    if value != 0:
+                        result = f"{result} {key} {value};"   
+                table.field_names = ["uuid", "лимит", "статус", "макс сумм просрочки", "просрочки", "тип", "дата закрытия", "oтношение"]   
+                table.add_row([uuidHandlerClean(loan), creditLimit, status[1], maxDelayBalance, result, type, dateParser(factCloseDate), relationship])      
+            
             # delay 
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[3]:
+              table.field_names = ["uuid", "лимит", "статус", "сумма просрочки", "дата воз.", "тип", "oтношение", "дней"]  
               if currentDelay != None and  currentDelay != '0' or status[0] == '52' :
                 # tabale.field_names  = ["uuid", "лимит", "статус", "сумма просрочки", "дата воз.", "тип", "oтношение"  "дней"]  
-                tabale.add_row([uuidHandlerClean(loan), creditLimit, status[1], currentDelayBalance, dateParser(pastDueDates['pastDueDate']), type, relationship, currentDelay])
+                table.add_row([uuidHandlerClean(loan), creditLimit, status[1], currentDelayBalance, dateParser(pastDueDates['pastDueDate']), type, relationship, currentDelay])
             
             # scoring          
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[0]:
@@ -301,8 +310,8 @@ def parser(file_name: str) -> None:
 
                     print('====================####====================')
                     print('')
-    if len(sys.argv) > 1 and sys.argv[1] == argTypes[3]:
-      print(tabale)
+    if len(sys.argv) > 1 and sys.argv[1] == argTypes[3] or sys.argv[1] == argTypes[4]:
+      print(table)
 
 if len(sys.argv) == 1: 
   for file in arr:
