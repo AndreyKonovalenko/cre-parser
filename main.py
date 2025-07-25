@@ -172,7 +172,10 @@ def parser(file_name: str) -> None:
     person = group.getElementsByTagName("NAME")
 
     if (person.length > 0):
-        print(group.getElementsByTagName('LAST_NAME')[0].childNodes[0].nodeValue)
+      last_name = group.getElementsByTagName('LAST_NAME')[0].childNodes[0].nodeValue
+      first_name = group.getElementsByTagName('FIRST_NAME')[0].childNodes[0].nodeValue
+      father_name = group.getElementsByTagName('SECOND_NAME')[0].childNodes[0].nodeValue
+      print(f"{last_name} {first_name} {father_name}")
     
     business = group.getElementsByTagName('BUSINESS')
     if (business.length > 0):
