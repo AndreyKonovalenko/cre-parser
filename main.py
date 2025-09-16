@@ -2,6 +2,7 @@ import xml.dom.minidom
 import os 
 import datetime
 import sys
+import json
 from prettytable import PrettyTable
 from constants import *
 
@@ -16,11 +17,14 @@ less89 = 'от 60 до 89 дней:'
 plus90 = 'более 90 дней:'
 
 def dateParser(date: str):
-    day = date[0:2]
-    month = date[2:4]
-    year = date[4:]
-    parsedDate = datetime.date(int(year), int(month), int(day))
-    return parsedDate
+    if date: 
+      day = date[0:2]
+      month = date[2:4]
+      year = date[4:]
+      parsedDate = str(datetime.date(int(year), int(month), int(day)))
+      return parsedDate
+    else:
+      return 'Дата не задана' 
 
 def timeDeltaHandler(close):
     startDate = dateParser(close)
@@ -180,7 +184,7 @@ def parser(file_name: str) -> None:
     business = group.getElementsByTagName('BUSINESS')
     if (business.length > 0):
         print(group.getElementsByTagName('FULL_NAME')[0].childNodes[0].nodeValue)
-
+    
     loans = group.getElementsByTagName('LOAN')
     loans_main_borrower = group.getElementsByTagName('LOANS_MAIN_BORROWER')
     loans_active = group.getElementsByTagName('LOANS_ACTIVE')
@@ -190,7 +194,7 @@ def parser(file_name: str) -> None:
     print( f"всего {loans_main_borrower_result} счетов; активных {loans_actiev_result} счетов")
 
     # delay case only 
-  
+    company_OGRN = group.getElementsByTagName('OGRN')[0].childNodes[0].nodeValue
     table = PrettyTable()
   
     for index, loan in enumerate(loans):
@@ -256,12 +260,12 @@ def parser(file_name: str) -> None:
                         print('с момента закрытия счета прошло более 3-x лет')
             # shortTable           
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[4]:
+                table.field_names = ["uuid", "лимит", "статус", "макс сумм просрочки", "просрочки", "тип", "дата закрытия", "oтношение"]  
                 result = ""
                 for key, value in delay.items():   
                     if value != 0:
-                        result = f"{result} {key} {value};"   
-                table.field_names = ["uuid", "лимит", "статус", "макс сумм просрочки", "просрочки", "тип", "дата закрытия", "oтношение"]   
-                table.add_row([uuidHandlerClean(loan), creditLimit, status[1], maxDelayBalance, result, type, dateParser(factCloseDate), relationship])      
+                        result = f"{result} {key} {value};"                    
+                table.add_row([uuidHandlerClean(loan), float(creditLimit), status[1], maxDelayBalance, result, type, dateParser(factCloseDate), relationship])      
             
             # delay 
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[3]:
@@ -315,6 +319,13 @@ def parser(file_name: str) -> None:
                     print('')
     if len(sys.argv) > 1 and sys.argv[1] == argTypes[3] or sys.argv[1] == argTypes[4]:
       print(table)
+      
+    if len(sys.argv) > 2 and (sys.argv[1] == argTypes[3] or sys.argv[1] == argTypes[4]) and sys.argv[2] == 'json':
+      print(table)
+      json_string = table.get_json_string()
+      full_path = os.path.join(directory, f'{company_OGRN}.json')
+      with open(full_path, 'w') as f:
+       f.write(json_string)
 
 if len(sys.argv) == 1: 
   for file in arr:
