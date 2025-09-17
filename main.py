@@ -21,7 +21,7 @@ def dateParser(date: str):
       day = date[0:2]
       month = date[2:4]
       year = date[4:]
-      parsedDate = str(datetime.date(int(year), int(month), int(day)))
+      parsedDate = datetime.date(int(year), int(month), int(day))
       return parsedDate
     else:
       return 'Дата не задана' 
@@ -67,8 +67,7 @@ def uuidHandlerClean(loan):
         return (uuid)
     else:
         return ('uuid: не задан')
-  
-            
+              
 def statusHandler(loan):
     result = getElementValueHandler(loan, 'STATUS')
     if result:
@@ -97,7 +96,6 @@ def pastDueDateHandler(loan):
         return { "pastDueDate": pastDueDate, "calculationDate": calculationDate}
     else: 
         return None
-
 
 def creditLimitHandeler(loan):
     creditLimit = getElementValueHandler(loan, 'CREDIT_LIMIT')
@@ -182,8 +180,9 @@ def parser(file_name: str) -> None:
       print(f"{last_name} {first_name} {father_name}")
     
     business = group.getElementsByTagName('BUSINESS')
+    company_OGRN = group.getElementsByTagName('OGRN')[0].childNodes[0].nodeValue if group.getElementsByTagName('OGRN').length> 0 else None
     if (business.length > 0):
-        print(group.getElementsByTagName('FULL_NAME')[0].childNodes[0].nodeValue)
+        print(f"{group.getElementsByTagName('FULL_NAME')[0].childNodes[0].nodeValue} OGRN: {company_OGRN}")
     
     loans = group.getElementsByTagName('LOAN')
     loans_main_borrower = group.getElementsByTagName('LOANS_MAIN_BORROWER')
@@ -194,7 +193,7 @@ def parser(file_name: str) -> None:
     print( f"всего {loans_main_borrower_result} счетов; активных {loans_actiev_result} счетов")
 
     # delay case only 
-    company_OGRN = group.getElementsByTagName('OGRN')[0].childNodes[0].nodeValue
+ 
     table = PrettyTable()
   
     for index, loan in enumerate(loans):
@@ -241,7 +240,7 @@ def parser(file_name: str) -> None:
                 print(uuidHandler(loan) + "; " + f"{status[1]}" + "; " + type + "; " + relationship)
                 print(f'{CREDIT_LIMIT} {creditLimit}')
                 if currentDelay != None and  currentDelay != '0' or status[0] == '52' :
-                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance} дата возникновения { dateParser(pastDueDates['pastDueDate'])} дата расчета {dateParser(pastDueDates['calculationDate'])}')
+                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance} дата возникновения { dateParser(pastDueDates['pastDueDate'] if pastDueDates else None)} дата расчета {dateParser(pastDueDates['calculationDate'] if pastDueDates else None)}')
                 else:
                     print(f'просроченная задолженность отсутствует')
                 print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}')
@@ -265,14 +264,14 @@ def parser(file_name: str) -> None:
                 for key, value in delay.items():   
                     if value != 0:
                         result = f"{result} {key} {value};"                    
-                table.add_row([uuidHandlerClean(loan), float(creditLimit), status[1], maxDelayBalance, result, type, dateParser(factCloseDate), relationship])      
+                table.add_row([uuidHandlerClean(loan), float(creditLimit), status[1], maxDelayBalance, result, type, str(dateParser(factCloseDate)), relationship])      
             
             # delay 
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[3]:
               table.field_names = ["uuid", "лимит", "статус", "сумма просрочки", "дата воз.", "тип", "oтношение", "дней"]  
               if currentDelay != None and  currentDelay != '0' or status[0] == '52' :
                 # tabale.field_names  = ["uuid", "лимит", "статус", "сумма просрочки", "дата воз.", "тип", "oтношение"  "дней"]  
-                table.add_row([uuidHandlerClean(loan), creditLimit, status[1], currentDelayBalance, dateParser(pastDueDates['pastDueDate']), type, relationship, currentDelay])
+                table.add_row([uuidHandlerClean(loan), creditLimit, status[1], currentDelayBalance, str(dateParser(pastDueDates['pastDueDate'] if pastDueDates else None)), type, relationship, currentDelay])
             
             # scoring          
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[0]:
@@ -321,9 +320,8 @@ def parser(file_name: str) -> None:
       print(table)
       
     if len(sys.argv) > 2 and (sys.argv[1] == argTypes[3] or sys.argv[1] == argTypes[4]) and sys.argv[2] == 'json':
-      print(table)
       json_string = table.get_json_string()
-      full_path = os.path.join(directory, f'{company_OGRN}.json')
+      full_path = os.path.join(directory, f'{company_OGRN if company_OGRN != None else 'output'}.json')
       with open(full_path, 'w') as f:
        f.write(json_string)
 
