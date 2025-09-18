@@ -5,168 +5,12 @@ import sys
 import json
 from prettytable import PrettyTable
 from constants import *
+import service
 
 directory = os.environ['directory']
 arr = os.listdir(rf'{directory}')
 argTypes = ['scoring', 'short', 'help', 'delay', 'shortTable']
 
-less5 = 'менее 5 дней:'
-less29 = 'oт 5 до 29 дней:'
-less59 = 'от 30 до 59 дней:'
-less89 = 'от 60 до 89 дней:'
-plus90 = 'более 90 дней:'
-
-def dateParser(date: str):
-    if date: 
-      day = date[0:2]
-      month = date[2:4]
-      year = date[4:]
-      parsedDate = datetime.date(int(year), int(month), int(day))
-      return parsedDate
-    else:
-      return 'Дата не задана' 
-
-def timeDeltaHandler(close):
-    startDate = dateParser(close)
-    now = datetime.date.today()
-    delta = now - startDate
-    return delta.days
-
-def getElementValueHandler(loan, type):
-    elementTag = loan.getElementsByTagName(type)
-    if(elementTag.length > 0):
-        return elementTag[0].childNodes[0].nodeValue
-    else:
-        return None
-
-def confirmDateHandler(loan):
-    result = getElementValueHandler(loan, 'INF_CONFIRM_DATE')
-    if result:
-        print(f'{CONFIRM_DATE}: {dateParser(result)}')
-    else:
-        print(f'{CONFIRM_DATE}: не задана')
-
-def factCloseDateHandler(loan):
-    result = getElementValueHandler(loan, 'FACT_CLOSE_DATE')
-    if result:
-        return result
-    else:
-        return None
-
-def uuidHandler(loan):
-    uuidTag = loan.getElementsByTagName('UUID')
-    if uuidTag.length > 0:
-        uuid = uuidTag[0].childNodes[0].nodeValue
-        return (f'uuid: {uuid}')
-    else:
-        return ('uuid: не задан')
-def uuidHandlerClean(loan):
-    uuidTag = loan.getElementsByTagName('UUID')
-    if uuidTag.length > 0:
-        uuid = uuidTag[0].childNodes[0].nodeValue
-        return (uuid)
-    else:
-        return ('uuid: не задан')
-              
-def statusHandler(loan):
-    result = getElementValueHandler(loan, 'STATUS')
-    if result:
-        if result == '00':
-            return ['00',  'активный']
-        if result == '13':
-            return ['13', 'закрыт']
-        if result == "14":
-            return ['14', 'передан на обслуживание в другую организацию']
-        if result == '52':
-            return ['52', 'просрочен']
-    else:
-        return ['','не задан']
-
-def currentDelayHandler(loan):
-    currentDelay = getElementValueHandler(loan,'CURRENT_DELQ')
-    if currentDelay: 
-        return currentDelay
-    else:
-        return None
-
-def pastDueDateHandler(loan):
-    pastDueDate= getElementValueHandler(loan, 'PAST_DUE_DATE')
-    calculationDate = getElementValueHandler(loan, 'CALCULATION_DATE')
-    if pastDueDate and calculationDate: 
-        return { "pastDueDate": pastDueDate, "calculationDate": calculationDate}
-    else: 
-        return None
-
-def creditLimitHandeler(loan):
-    creditLimit = getElementValueHandler(loan, 'CREDIT_LIMIT')
-    if creditLimit:
-        return creditLimit
-    else: 
-        return None
-
-def productTypeHandler(loan):
-    type = getElementValueHandler(loan, 'TYPE')
-    if type != None:
-      typeText = TYPES.get(type)
-      if typeText == None: 
-        return "тип " + type + " не описан в объекте TYPES"
-      else: 
-          return typeText
-    else: 
-        return "отсутствует tag TYPE"
-    
-def relationshipTypeHandler(loan):
-    relationship = getElementValueHandler(loan, 'RELATIONSHIP')
-    if relationship != None:
-      typeText = RELATIONSHIPS.get(relationship)
-      if typeText == None: 
-        return "тип " + relationship + " не описан в объекте RELATIONSHIP"
-      else: 
-          return typeText
-    else: 
-        return "отсутвует tag RELATIONSHIP"
-    
-def currentDelayBalanceHandler(loan):
-    currentDelayBalance = getElementValueHandler(loan, 'DELQ_BALANCE')
-    if currentDelayBalance:
-        return float(currentDelayBalance)
-    else: 
-        return 0
-
-def maxDelayBalanceHandler(loan):
-    result = getElementValueHandler(loan, 'MAX_DELQ_BALANCE')
-    if result: 
-        return float(result)
-    else:
-        return 0
-       
-
-def termminationReasonHandler(loan):
-    result = getElementValueHandler(loan, 'TERMINATION_REASON')
-    if result:
-        print(f'причина закрытия код: {result}')
-        if result == '1':
-            print('причина закрытия: ненадлежащее исполнение обязательств')
-        if result == '99':
-            print('причина закрытия: иное основаение')
-
-def delayInfoHandler(loan):
-    result = {
-    less5: int(getElementValueHandler(loan, 'TTL_DELQ_5')),
-    less29: int(getElementValueHandler(loan,'TTL_DELQ_5_29')),
-    less59: int(getElementValueHandler(loan, 'TTL_DELQ_30_59')),
-    less89: int(getElementValueHandler(loan, 'TTL_DELQ_60_89')),
-    plus90: int(getElementValueHandler(loan, 'TTL_DELQ_90_PLUS')),
-    }
-    return result
-
-def hasDelay(delay):
-    result = False
-    for key, value in delay.items():
-        if value != 0:
-            result = True
-            break
-    return result
 
 def parser(file_name: str) -> None:
     domtree = xml.dom.minidom.parse(os.path.join(directory, file_name))
@@ -197,21 +41,21 @@ def parser(file_name: str) -> None:
     table = PrettyTable()
   
     for index, loan in enumerate(loans):
-        delay = delayInfoHandler(loan)
-        if hasDelay(delay) or getElementValueHandler(loan, 'STATUS') == "52":
-            currentDelay = currentDelayHandler(loan)
-            pastDueDates=pastDueDateHandler(loan)
-            currentDelayBalance = currentDelayBalanceHandler(loan)
-            maxDelayBalance = maxDelayBalanceHandler(loan)
-            factCloseDate = factCloseDateHandler(loan)
-            status = statusHandler(loan)
-            creditLimit = creditLimitHandeler(loan)   
-            type = productTypeHandler(loan)
-            relationship = relationshipTypeHandler(loan)  
+        delay = service.delayInfoHandler(loan)
+        if service.hasDelay(delay) or service.getElementValueHandler(loan, 'STATUS') == "52":
+            currentDelay = service.currentDelayHandler(loan)
+            pastDueDates=service.pastDueDateHandler(loan)
+            currentDelayBalance = service.currentDelayBalanceHandler(loan)
+            maxDelayBalance = service.maxDelayBalanceHandler(loan)
+            factCloseDate = service.actCloseDateHandler(loan)
+            status = service.statusHandler(loan)
+            creditLimit = service.creditLimitHandeler(loan)   
+            type = service.productTypeHandler(loan)
+            relationship = service.relationshipTypeHandler(loan)  
            
             if len(sys.argv) < 2:
                 print(f'====================N:{index+1}====================')
-                print(uuidHandler(loan))
+                print(service.uuidHandler(loan))
                 print(f"статус: {status[1]}")
                 print(f'{CREDIT_LIMIT} {creditLimit}')
                 print(type + " " + relationship)
@@ -220,15 +64,15 @@ def parser(file_name: str) -> None:
                 else:
                     print(f'просроченная задолженность отсутствует')
                 print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}')
-                termminationReasonHandler(loan)
-                confirmDateHandler(loan)
+                service.termminationReasonHandler(loan)
+                service.confirmDateHandler(loan)
                 print('Данные о просрочке:')
                 for key, value in delay.items():
                     if value != 0:
                         print(key, value)                    
                 if factCloseDate:
-                    print(f'{FACT_CLOSE_DATA} {dateParser(factCloseDate)}')
-                    delta = timeDeltaHandler(factCloseDate)
+                    print(f'{FACT_CLOSE_DATA} {service.dateParser(factCloseDate)}')
+                    delta = service.timeDeltaHandler(factCloseDate)
                     if delta < 1096:
                         print('с момента закрытия счета прошло менее 3-x лет')
                     else: 
@@ -237,10 +81,10 @@ def parser(file_name: str) -> None:
                 print('')
             # short
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[1]:
-                print(uuidHandler(loan) + "; " + f"{status[1]}" + "; " + type + "; " + relationship)
+                print(service.uuidHandler(loan) + "; " + f"{status[1]}" + "; " + type + "; " + relationship)
                 print(f'{CREDIT_LIMIT} {creditLimit}')
                 if currentDelay != None and  currentDelay != '0' or status[0] == '52' :
-                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance} дата возникновения { dateParser(pastDueDates['pastDueDate'] if pastDueDates else None)} дата расчета {dateParser(pastDueDates['calculationDate'] if pastDueDates else None)}')
+                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance} дата возникновения { service.dateParser(pastDueDates['pastDueDate'] if pastDueDates else None)} дата расчета {service.dateParser(pastDueDates['calculationDate'] if pastDueDates else None)}')
                 else:
                     print(f'просроченная задолженность отсутствует')
                 print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}')
@@ -251,8 +95,8 @@ def parser(file_name: str) -> None:
                 print(f'Данные о просрочке:{result}')
 
                 if factCloseDate:
-                    print(f'{FACT_CLOSE_DATA} {dateParser(factCloseDate)}')
-                    delta = timeDeltaHandler(factCloseDate)
+                    print(f'{FACT_CLOSE_DATA} {service.dateParser(factCloseDate)}')
+                    delta = service.timeDeltaHandler(factCloseDate)
                     if delta < 1096:
                         print('с момента закрытия счета прошло менее 3-x лет')
                     else: 
@@ -264,18 +108,18 @@ def parser(file_name: str) -> None:
                 for key, value in delay.items():   
                     if value != 0:
                         result = f"{result} {key} {value};"                    
-                table.add_row([uuidHandlerClean(loan), float(creditLimit), status[1], maxDelayBalance, result, type, str(dateParser(factCloseDate)), relationship])      
+                table.add_row([service.uuidHandlerClean(loan), float(creditLimit), status[1], maxDelayBalance, result, type, str(service.dateParser(factCloseDate)), relationship])      
             
             # delay 
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[3]:
               table.field_names = ["uuid", "лимит", "статус", "сумма просрочки", "дата воз.", "тип", "oтношение", "дней"]  
               if currentDelay != None and  currentDelay != '0' or status[0] == '52' :
                 # tabale.field_names  = ["uuid", "лимит", "статус", "сумма просрочки", "дата воз.", "тип", "oтношение"  "дней"]  
-                table.add_row([uuidHandlerClean(loan), creditLimit, status[1], currentDelayBalance, str(dateParser(pastDueDates['pastDueDate'] if pastDueDates else None)), type, relationship, currentDelay])
+                table.add_row([service.uuidHandlerClean(loan), creditLimit, status[1], currentDelayBalance, str(service.dateParser(pastDueDates['pastDueDate'] if pastDueDates else None)), type, relationship, currentDelay])
             
             # scoring          
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[0]:
-                currentDelayLogical = currentDelayHandler(loan) and int(currentDelayBalanceHandler(loan)) > 10000
+                currentDelayLogical = service.currentDelayHandler(loan) and int(service.currentDelayBalanceHandler(loan)) > 10000
                 activeStatus = status[0] == '00' or status[0] == '52'
                 delay30to59 = delay[less59] != 0
                 delay60to89 = delay[less89] != 0
@@ -283,7 +127,7 @@ def parser(file_name: str) -> None:
 
                 def deltaHandler():
                     if factCloseDate:
-                        if timeDeltaHandler(factCloseDate) < 1096:
+                        if service.timeDeltaHandler(factCloseDate) < 1096:
                             return True
                     return False
                 
@@ -293,11 +137,11 @@ def parser(file_name: str) -> None:
 
                 if conditionOne or conditionTwo or conditionThree:
                     print(f'====================N:{index+1}====================')
-                    print(uuidHandler(loan))
+                    print(service.uuidHandler(loan))
                     print(f"статус: {status[1]}")
                     print(type + " " + relationship)
                     print(f'{CREDIT_LIMIT} {creditLimit}')
-                    confirmDateHandler(loan)
+                    service.confirmDateHandler(loan)
                     print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}') 
                     print('Данные о просрочке:')
                     for key, value in delay.items():
