@@ -34,7 +34,7 @@ def parser(file_name: str) -> None:
     loans_main_borrower_result = loans_main_borrower[0].childNodes[0].nodeValue if loans_main_borrower else "undefined"
     loans_actiev_result = loans_active[0].childNodes[0].nodeValue if loans_active else 'undefined'
 
-    print( f"всего {loans_main_borrower_result} счетов; активных {loans_actiev_result} счетов")
+    print( f"всего {loans_main_borrower_result} договоров; активных {loans_actiev_result} договоров")
 
     # delay case only 
  
@@ -47,7 +47,7 @@ def parser(file_name: str) -> None:
             pastDueDates=service.pastDueDateHandler(loan)
             currentDelayBalance = service.currentDelayBalanceHandler(loan)
             maxDelayBalance = service.maxDelayBalanceHandler(loan)
-            factCloseDate = service.actCloseDateHandler(loan)
+            factCloseDate = service.factCloseDateHandler(loan)
             status = service.statusHandler(loan)
             creditLimit = service.creditLimitHandeler(loan)   
             type = service.productTypeHandler(loan)
@@ -74,9 +74,9 @@ def parser(file_name: str) -> None:
                     print(f'{FACT_CLOSE_DATA} {service.dateParser(factCloseDate)}')
                     delta = service.timeDeltaHandler(factCloseDate)
                     if delta < 1096:
-                        print('с момента закрытия счета прошло менее 3-x лет')
+                        print('с момента закрытия договора прошло менее 3-x лет')
                     else: 
-                        print('с момента закрытия счета прошло более 3-x лет')
+                        print('с момента закрытия договора прошло более 3-x лет')
                 print('====================####====================')
                 print('')
             # short
@@ -84,7 +84,7 @@ def parser(file_name: str) -> None:
                 print(service.uuidHandler(loan) + "; " + f"{status[1]}" + "; " + type + "; " + relationship)
                 print(f'{CREDIT_LIMIT} {creditLimit}')
                 if currentDelay != None and  currentDelay != '0' or status[0] == '52' :
-                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance} дата возникновения { service.dateParser(pastDueDates['pastDueDate'] if pastDueDates else None)} дата расчета {service.dateParser(pastDueDates['calculationDate'] if pastDueDates else None)}')
+                    print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сумму {currentDelayBalance} дата возникновения { service.dateParser(pastDueDates['pastDueDate'] if pastDueDates else None)} дата радоговора {service.dateParser(pastDueDates['calculationDate'] if pastDueDates else None)}')
                 else:
                     print(f'просроченная задолженность отсутствует')
                 print(f'{MAX_DELAY_BALANCE} {maxDelayBalance}')
@@ -98,9 +98,9 @@ def parser(file_name: str) -> None:
                     print(f'{FACT_CLOSE_DATA} {service.dateParser(factCloseDate)}')
                     delta = service.timeDeltaHandler(factCloseDate)
                     if delta < 1096:
-                        print('с момента закрытия счета прошло менее 3-x лет')
+                        print('с момента закрытия договора прошло менее 3-x лет')
                     else: 
-                        print('с момента закрытия счета прошло более 3-x лет')
+                        print('с момента закрытия договора прошло более 3-x лет')
             # shortTable           
             if len(sys.argv) > 1 and sys.argv[1] == argTypes[4]:
                 table.field_names = ["uuid", "лимит", "статус", "макс сумм просрочки", "просрочки", "тип", "дата закрытия", "oтношение"]  
@@ -153,10 +153,10 @@ def parser(file_name: str) -> None:
                         print(f'{CURRENT_DELAY} {currentDelay} дней/дня на сум {currentDelayBalance }')
                         
                     if conditionTwo:
-                        print('Обнаружен факт возникновения просроченной задолженности по активным счетам длительностью 30 (тридцать)  и более календарных дней, максимальная сумму просрочки по которым превышала 10 000 руб.')  
+                        print('Обнаружен факт возникновения просроченной задолженности по активным договорам длительностью 30 (тридцать)  и более календарных дней, максимальная сумму просрочки по которым превышала 10 000 руб.')  
                     
                     if conditionThree:
-                        print('oбнаружен факт возникновения просроченной задолженности по закрытыми счетам (дата закрытия счета не превышает 36 месяцев от даты подачи заявки)  длительностью 90 (девяносто) и более календарных дней  на сумму более 10 000 руб.')       
+                        print('oбнаружен факт возникновения просроченной задолженности по закрытыми договорам (дата закрытия договора не превышает 36 месяцев от даты подачи заявки)  длительностью 90 (девяносто) и более календарных дней  на сумму более 10 000 руб.')       
 
                     print('====================####====================')
                     print('')
