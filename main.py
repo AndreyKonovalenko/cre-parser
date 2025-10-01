@@ -180,3 +180,14 @@ if len(sys.argv) > 1:
     if sys.argv[1] != argTypes[2]: 
         for file in arr:
           parser(file)
+
+
+# let
+#     Source = Json.Document(File.Contents("path to file \.json")),
+#     #"Converted to Table" = Table.FromList(Source, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+#     #"Удаленные верхние строки" = Table.Skip(#"Converted to Table",1),
+#     #"Added Custom" = Table.AddColumn(#"Удаленные верхние строки", "tb", each Table.FromRecords({[Column1]})),
+#     res=Table.Combine(#"Added Custom"[tb]),
+#     #"Измененный тип" = Table.TransformColumnTypes(res,{{"дата закрытия", type date}})
+# in
+#     #"Измененный тип"
